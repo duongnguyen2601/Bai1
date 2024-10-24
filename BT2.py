@@ -1,38 +1,28 @@
-# Thông tin ảnh được ghi lại sau khi chạy chương trình
+import cv2
+import numpy as np
+import matplotlib.pyplot as plt
+image_path = r'c:\Users\ngotr\Pictures\main_1.jpg'
+# Đọc ảnh gốc
+image = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
 
-## Ảnh gốc
-Kích thước: 736x1307
-Số kênh: 3
-Tổng số pixel: 961952
+# 1. Dò biên với toán tử Sobel
+sobel_x = cv2.filter2D(image, cv2.CV_64F, np.array([[-1, 0, 1], [-2, 0, 2], [-1, 0, 1]]))  # Gradient theo trục x
+sobel_y = cv2.filter2D(image, cv2.CV_64F, np.array([[-1, -2, -1], [0, 0, 0], [1, 2, 1]]))  # Gradient theo trục y
+sobel_combined = cv2.magnitude(sobel_x, sobel_y)  # Tổng hợp gradient theo cả hai hướng
 
-## Ảnh xám
-Kích thước: 736x1307
-Số kênh: 1
-Tổng số pixel: 961952
+# 2. Dò biên với toán tử Laplace Gaussian
+log_kernel = np.array([[0, 0, -1, 0, 0],
+                       [0, -1, -2, -1, 0],
+                       [-1, -2, 16, -2, -1],
+                       [0, -1, -2, -1, 0],
+                       [0, 0, -1, 0, 0]])
 
-## Ảnhgiảm nhiễu
-Kích thước: 736x1307
-Số kênh: 1
-Tổng số pixel: 961952
+log_image = cv2.filter2D(image, -1, log_kernel)
 
-## Dò biên Sobel
-Kích thước: 736x1307
-Số kênh: 1
-Tổng số pixel: 961952
-
-## Dò biên Laplacian
-Kích thước: 736x1307
-Số kênh: 1
-Tổng số pixel: 961952
-
--Nhập thư viện cần thiết
-sử dụng cv2 (OpenCV) cho xử lý ảnh và numpy để làm việc với mảng
--Đọc ảnh
-đọc một bức ảnh và chuyển đổi nó sang dạng ảnh xám (grayscale)
-ảnh xám giúp đơn giản hóa viêc xử lý vì dùng 1 kênh màu
--Dò biên bằng toán tử Sobel
-Gx = [-1 0 1]             Gy = [ 1  2  1]
-     [-2 0 2]                  [ 0  0  0]
-     [-1 0 1]                  [-1 -2 -1]
-Để tính độ lớn grandient:
-G = sqrt(Gx^2+ Gy^2)
+# Hiển thị các kết quả
+plt.figure(figsize=(10, 5))
+plt.subplot(1, 3, 1), plt.imshow(image, cmap='gray'), plt.title('Ảnh xám')
+plt.subplot(1, 3, 2), plt.imshow(sobel_combined, cmap='gray'), plt.title('Biên với Sobel')
+plt.subplot(1, 3, 3), plt.imshow(log_image, cmap='gray'), plt.title('Biên với LoG')
+plt.tight_layout()
+plt.show()
